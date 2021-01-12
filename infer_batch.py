@@ -2,6 +2,7 @@ import os
 import csv
 import argparse
 import tensorflow as tf
+
 from tensorflow.compat.v1.keras import backend as K
 
 from glob import glob
@@ -11,7 +12,8 @@ from model.octopus import Octopus
 
 
 def main(weights, num, batch_file, opt_pose_steps, opt_shape_steps):
-    K.set_session(tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))))
+    K.set_session(tf.compat.v1.Session(config=tf.ConfigProto(
+        gpu_options=tf.GPUOptions(allow_growth=True))))
 
     model = Octopus(num=num)
 
@@ -43,16 +45,19 @@ def main(weights, num, batch_file, opt_pose_steps, opt_shape_steps):
 
             if opt_pose_steps:
                 print('> Optimizing for pose...')
-                model.opt_pose(segmentations, joints_2d, opt_steps=opt_pose_steps)
+                model.opt_pose(segmentations, joints_2d,
+                               opt_steps=opt_pose_steps)
 
             if opt_shape_steps:
                 print('> Optimizing for shape...')
-                model.opt_shape(segmentations, joints_2d, face_2d, opt_steps=opt_shape_steps)
+                model.opt_shape(segmentations, joints_2d,
+                                face_2d, opt_steps=opt_shape_steps)
 
             print('> Estimating shape...')
             pred = model.predict(segmentations, joints_2d)
 
-            write_mesh('{}/{}.obj'.format(out_dir, name), pred['vertices'][0], pred['faces'])
+            write_mesh('{}/{}.obj'.format(out_dir, name),
+                       pred['vertices'][0], pred['faces'])
 
             print('> Done.')
 
@@ -84,4 +89,5 @@ if __name__ == '__main__':
         help='Model weights file (*.hdf5)')
 
     args = parser.parse_args()
-    main(args.weights, args.num, args.batch_file, args.opt_steps_pose, args.opt_steps_shape)
+    main(args.weights, args.num, args.batch_file,
+         args.opt_steps_pose, args.opt_steps_shape)
