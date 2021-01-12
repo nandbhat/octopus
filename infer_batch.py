@@ -2,7 +2,7 @@ import os
 import csv
 import argparse
 import tensorflow as tf
-import keras.backend as K
+from tensorflow.compat.v1.keras import backend as K
 
 from glob import glob
 

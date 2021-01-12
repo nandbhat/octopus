@@ -1,8 +1,7 @@
 import os
 import argparse
 import tensorflow as tf
-import keras.backend as K
-
+from tensorflow.compat.v1.keras import backend as K
 from glob import glob
 
 from lib.io import openpose_from_file, read_segmentation, write_mesh
@@ -16,7 +15,8 @@ def main(weights, name, segm_dir, pose_dir, out_dir, opt_pose_steps, opt_shape_s
     if len(segm_files) != len(pose_files) or len(segm_files) == len(pose_files) == 0:
         exit('Inconsistent input.')
 
-    K.set_session(tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))))
+    K.set_session(tf.Session(config=tf.ConfigProto(
+        gpu_options=tf.GPUOptions(allow_growth=True))))
 
     model = Octopus(num=len(segm_files))
     model.load(weights)
@@ -39,12 +39,14 @@ def main(weights, name, segm_dir, pose_dir, out_dir, opt_pose_steps, opt_shape_s
 
     if opt_shape_steps:
         print('Optimizing for shape...')
-        model.opt_shape(segmentations, joints_2d, face_2d, opt_steps=opt_shape_steps)
+        model.opt_shape(segmentations, joints_2d, face_2d,
+                        opt_steps=opt_shape_steps)
 
     print('Estimating shape...')
     pred = model.predict(segmentations, joints_2d)
 
-    write_mesh('{}/{}.obj'.format(out_dir, name), pred['vertices'][0], pred['faces'])
+    write_mesh('{}/{}.obj'.format(out_dir, name),
+               pred['vertices'][0], pred['faces'])
 
     print('Done.')
 
@@ -86,4 +88,5 @@ if __name__ == '__main__':
         help='Model weights file (*.hdf5)')
 
     args = parser.parse_args()
-    main(args.weights, args.name, args.segm_dir, args.pose_dir, args.out_dir, args.opt_steps_pose, args.opt_steps_shape)
+    main(args.weights, args.name, args.segm_dir, args.pose_dir,
+         args.out_dir, args.opt_steps_pose, args.opt_steps_shape)
